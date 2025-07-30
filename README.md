@@ -66,7 +66,35 @@ memset(obj, 0, sizeof(TempClass)); // 错误
 ```
 
 使用**AddressSanitizer/Valgrind**在调试期间发现内存问题
+
 memset的第三个入参最好使用**sizeof(obj或者*ptr)**
+
+memset有可能被编译器优化，当某块内存被memset后不会被使用，编译器会认为进行memset的操作无意义，因此会优化掉改该行代码，这对于敏感数据非常危险
+
+#### 1.2 memset_s
+
+```c
+/*
+ * C11
+ * @dest: 待填充的内存地址
+ * @destsz: 缓冲区大小 
+ * @ch: 待写入的字节值
+ * @count: 预期写入的字节数
+ * @returnValue: 错误码，0: 正常值，EINVAL: dest==NULL or count>destsz，ERANGE: destsz>ESIZE_MAX
+ */
+errno_t memset_s(void *dest, rsize_t destsz, int ch, rsize_t count);
+```
+
+核心特性：
+1. 参数合法性校验
+2. 返回错误码
+3. 即使发生错误也尝试清理内存，保障敏感数据不保留在内存
+4. 禁止编译器优化
+5. C11标准支持，windows MSVC天然支持，linux gilbc不支持，使用如下替代
+
+```c
+void explicit_bzero(void *s, size_t n);
+```
 
 ## .c/.cpp内存模型
 
