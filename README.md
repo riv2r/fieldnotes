@@ -1,5 +1,62 @@
 # fieldnotes
 
+## static
+
+```c
+/* static修饰变量 */
+static T a; // 存储在BSS段，但是会被系统默认值初始化
+static T a = 0; // 存储在数据段
+
+// .c/.cpp
+static void function(); // 仅在定义该函数的文件内才可以使用
+
+// .h
+static inline void function(); // 在每个包含.h的.c/.cpp中都会生成一个副本并展开
+                               // 如果.h中声明的static函数没有inline：
+                               // 1. 每个源文件一份副本，增加可执行文件体积
+                               // 2. 修改静态函数，只编译部分源文件，函数行为不一致
+                               // 3. 静态函数内部状态不共享
+                               // 4. 难以维护和扩展
+```
+
+```cpp
+class TempClass {
+private:
+    static T a;
+    static T functionA();
+protected:
+    static T b;
+    static T functionB();
+public:
+    static T c;
+    static inline T d = 0; // C++17，必须在类内初始化
+    static T functionC();
+};
+
+/* static成员变量必须类外初始化 */
+T TempClass::a = 0;
+T TempClass::b = 0;
+T TempClass::c = 0;
+
+/* static成员函数类外定义不要加static */
+T functionA() {return 0;}
+T functionB() {return 0;}
+T functionC() {return 0;}
+
+cout<<TempClass::a<<endl; // 错误，static变量为private
+TempClass::functionA(); // 错误，同上
+
+class ChildTempClass: public TempClass {};
+ChildTempClass *obj = new ChildTempClass;
+cout<<obj->b<<endl; // 正确，基类的static变量可以被子类对象调用
+obj->functionB(); // 正确，同上
+
+cout<<TempClass::c<<endl; // 正确，static变量为public
+TempClass::functionC(); // 正确，同上
+                        // static成员函数不能访问非静态成员变量和成员函数
+                        // 不能是纯虚函数或者虚函数
+```
+
 ## 安全函数
 
 ### 1 memset和memset_s
