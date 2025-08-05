@@ -1,5 +1,19 @@
 # fieldnotes
 
+## this
+
+```cpp
+/* this 指向对象 */
+class TempClass {
+private:
+    T a;
+public:
+    T getValue();
+};
+
+class *const this; // 隐式声明
+```
+
 ## static
 
 ```c
@@ -39,9 +53,9 @@ T TempClass::b = 0;
 T TempClass::c = 0;
 
 /* static成员函数类外定义不要加static */
-T functionA() {return 0;}
-T functionB() {return 0;}
-T functionC() {return 0;}
+T TempClass::functionA() {return 0;}
+T TempClass::functionB() {return 0;}
+T TempClass::functionC() {return 0;}
 
 cout<<TempClass::a<<endl; // 错误，static变量为private
 TempClass::functionA(); // 错误，同上
@@ -151,6 +165,29 @@ errno_t memset_s(void *dest, rsize_t destsz, int ch, rsize_t count);
 
 ```c
 void explicit_bzero(void *s, size_t n);
+```
+
+### 2 memcpy和memcpy_s
+
+#### 2.1 memcpy
+
+```c
+#include <string.h>
+void *memcpy(void *dest, const void *src, size_t count); // 将src开始的count个字节复制到dest中，两块内存不可重叠（未定义）
+                                                         // dest缓冲区过小会造成缓冲区溢出
+                                                         // 无返回值错误码
+```
+
+#### 2.2 memcpy_s
+
+```c
+/*
+ * @returnValue: 0      成功
+ *               EINVAL 参数非法NULL或越界
+ *               ERANGE count>destsz
+ * 失败时，缓冲区被清零，防止敏感数据泄露
+ */
+errno_t memcpy_s(void *dest, rsize_t destsz, const void *src, rsize_t count); // destsz指定缓冲区大小，最好使用sizeof(dest类型)，尤其当dest为结构体或数组
 ```
 
 ## .c/.cpp内存模型
